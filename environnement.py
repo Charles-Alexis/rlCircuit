@@ -22,18 +22,24 @@ game_map = pygame.image.load('map.png').convert()
 car_length = 50 #px
 car_width = 20 #px
 
-car = car_dynamics.CarSimpleKinematicBicycleModel(car_length,car_width)
-#car = car_dynamics.CarFullDynamicBicycleModel(car_length,car_width)
-car_controler = cont.baseline_controler_kinematics(car)
-# car_controler = cont.baseline_controler_dynamics(car)
+model = 'Kinematics'
+
+if model == 'Dynamics':
+    car = car_dynamics.CarFullDynamicBicycleModel(car_length,car_width)
+    car_controler = cont.baseline_controler_dynamics(car)
+    # INIT SCREEN TEXT UPDATER
+    screen_text_updater = st.screen_text_dynamics(screen, car)
+if model == 'Kinematics':
+    car = car_dynamics.CarSimpleKinematicBicycleModel(car_length,car_width)
+    car_controler = cont.baseline_controler_kinematics(car)
+    # INIT SCREEN TEXT UPDATER
+    screen_text_updater = st.screen_text_kinematics(screen, car)
 
 car.game_map = game_map
 
 # INIT REWARD FUNCTION
 rf = reward_function.reward_function(car)
 
-# INIT SCREEN TEXT UPDATER
-screen_text_updater = st.screen_text(screen, car)
 
 while True:
     # Exit On Quit Event
@@ -63,8 +69,8 @@ while True:
     
     # UPDATE SCREEN TEXT
     screen_text_updater.show_debug_corner()
-    #screen_text_updater.update_inputs_text()
-    #screen_text_updater.update_states_text()
+    screen_text_updater.update_inputs_text()
+    screen_text_updater.update_states_text()
     screen_text_updater.update_data_text()
     car.radars.clear()
     

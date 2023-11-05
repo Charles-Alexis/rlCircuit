@@ -198,8 +198,6 @@ class CarFullDynamicBicycleModel(Car):
         
         self.calculate_corner_position()
         
-        print(self.corners)
-        
         # Check Collisions And Clear Radars
         self.check_collision(self.game_map)
 

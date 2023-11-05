@@ -13,6 +13,52 @@ class screen_text:
         self.generation_font = pygame.font.SysFont("Arial", 30)
         self.alive_font = pygame.font.SysFont("Arial", 20)
         self.screen = screen
+        
+    def show_debug_corner(self):
+        text = self.alive_font.render("(0,0)", True, (0, 0, 0))
+        text_rect = text.get_rect()
+        text_rect.center = (20, 10)
+        self.screen.blit(text, text_rect)
+        
+        text = self.alive_font.render("(0,1080)", True, (0, 0, 0))
+        text_rect = text.get_rect()
+        text_rect.center = (30, 1065)
+        self.screen.blit(text, text_rect)
+
+        text = self.alive_font.render("(1920,0)", True, (0, 0, 0))
+        text_rect = text.get_rect()
+        text_rect.center = (1875, 10)
+        self.screen.blit(text, text_rect)
+        
+        text = self.alive_font.render("(1920,1080)", True, (0, 0, 0))
+        text_rect = text.get_rect()
+        text_rect.center = (1865, 1065)
+        self.screen.blit(text, text_rect)
+        
+    def update_data_text(self):
+        text = self.alive_font.render("Data:", True, (0, 0, 0))
+        text_rect = text.get_rect()
+        text_rect.center = (1200, 450)
+        self.screen.blit(text, text_rect)
+        
+        text = self.alive_font.render("Total Traveled Distance: " + "{:.2f}".format(self.car.total_traveled_distance), True, (0, 0, 0))
+        text_rect = text.get_rect()
+        text_rect.center = (1200, 470)
+        self.screen.blit(text, text_rect)
+
+        text = self.alive_font.render("Turn Traveled Distance: " + "{:.2f}".format(self.car.turn_traveled_distance), True, (0, 0, 0))
+        text_rect = text.get_rect()
+        text_rect.center = (1200, 490)
+        self.screen.blit(text, text_rect)
+
+        text = self.alive_font.render("Turn completed: " + str(self.car.turn_completed), True, (0, 0, 0))
+        text_rect = text.get_rect()
+        text_rect.center = (1200, 510)
+        self.screen.blit(text, text_rect)
+
+class screen_text_dynamics(screen_text):
+    def __init__(self, screen, car):
+        screen_text.__init__(self, screen, car)
 
     def update_states_text(self):
         text = self.alive_font.render("States:", True, (0, 0, 0))
@@ -61,46 +107,51 @@ class screen_text:
         text_rect.center = (1000, 490)
         self.screen.blit(text, text_rect)
 
+class screen_text_kinematics(screen_text):
+    def __init__(self, screen, car):
+        screen_text.__init__(self, screen, car)
 
-    def update_data_text(self):
-        text = self.alive_font.render("Data:", True, (0, 0, 0))
+    def update_states_text(self):
+        text = self.alive_font.render("States:", True, (0, 0, 0))
         text_rect = text.get_rect()
-        text_rect.center = (1200, 450)
+        text_rect.center = (900, 450)
         self.screen.blit(text, text_rect)
         
-        text = self.alive_font.render("Total Traveled Distance: " + "{:.2f}".format(self.car.total_traveled_distance), True, (0, 0, 0))
+        text = self.alive_font.render("pos X: " + "{:.2f}".format(self.car.x[0]), True, (0, 0, 0))
         text_rect = text.get_rect()
-        text_rect.center = (1200, 470)
-        self.screen.blit(text, text_rect)
-
-        text = self.alive_font.render("Turn Traveled Distance: " + "{:.2f}".format(self.car.turn_traveled_distance), True, (0, 0, 0))
-        text_rect = text.get_rect()
-        text_rect.center = (1200, 490)
-        self.screen.blit(text, text_rect)
-
-        text = self.alive_font.render("Turn completed: " + str(self.car.turn_completed), True, (0, 0, 0))
-        text_rect = text.get_rect()
-        text_rect.center = (1200, 510)
-        self.screen.blit(text, text_rect)
-
-        
-    def show_debug_corner(self):
-        text = self.alive_font.render("(0,0)", True, (0, 0, 0))
-        text_rect = text.get_rect()
-        text_rect.center = (20, 10)
+        text_rect.center = (900, 550)
         self.screen.blit(text, text_rect)
         
-        text = self.alive_font.render("(0,1080)", True, (0, 0, 0))
+        text = self.alive_font.render("pos Y: " + "{:.2f}".format(self.car.x[1]), True, (0, 0, 0))
         text_rect = text.get_rect()
-        text_rect.center = (30, 1065)
-        self.screen.blit(text, text_rect)
-
-        text = self.alive_font.render("(1920,0)", True, (0, 0, 0))
-        text_rect = text.get_rect()
-        text_rect.center = (1875, 10)
+        text_rect.center = (900, 530)
         self.screen.blit(text, text_rect)
         
-        text = self.alive_font.render("(1920,1080)", True, (0, 0, 0))
+        text = self.alive_font.render("Theta: " + "{:.3f}".format(self.car.x[2]), True, (0, 0, 0))
         text_rect = text.get_rect()
-        text_rect.center = (1865, 1065)
+        text_rect.center = (900, 510)
         self.screen.blit(text, text_rect)
+        
+        text = self.alive_font.render("V: " + "{:.2f}".format(self.car.x[3]), True, (0, 0, 0))
+        text_rect = text.get_rect()
+        text_rect.center = (900, 490)
+        self.screen.blit(text, text_rect)
+        
+    def update_inputs_text(self):
+        text = self.alive_font.render("Input:", True, (0, 0, 0))
+        text_rect = text.get_rect()
+        text_rect.center = (1000, 450)
+        self.screen.blit(text, text_rect)
+        
+        text = self.alive_font.render("Acc: " + "{:.2f}".format(self.car.u[0]), True, (0, 0, 0))
+        text_rect = text.get_rect()
+        text_rect.center = (1000, 470)
+        self.screen.blit(text, text_rect)
+        
+        text = self.alive_font.render("Delta: " + "{:.2f}".format(self.car.u[1]), True, (0, 0, 0))
+        text_rect = text.get_rect()
+        text_rect.center = (1000, 490)
+        self.screen.blit(text, text_rect)
+
+
+        
