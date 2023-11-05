@@ -21,9 +21,13 @@ game_map = pygame.image.load('map.png').convert()
 # INIT CAR AND CONTROLER
 car_length = 50 #px
 car_width = 20 #px
-car = car_dynamics.Car(car_length,car_width)
+
+car = car_dynamics.CarSimpleKinematicBicycleModel(car_length,car_width)
+#car = car_dynamics.CarFullDynamicBicycleModel(car_length,car_width)
+car_controler = cont.baseline_controler_kinematics(car)
+# car_controler = cont.baseline_controler_dynamics(car)
+
 car.game_map = game_map
-car_controler = cont.baseline_controler(car)
 
 # INIT REWARD FUNCTION
 rf = reward_function.reward_function(car)
@@ -48,6 +52,7 @@ while True:
     
     # UPDATE CAR DYNAMICS
     car.update(game_map, car_controler.u)
+    
     # CREATE NEW RADARS FOR K+1 AND PRINT
     car.create_radars()
     
@@ -58,8 +63,8 @@ while True:
     
     # UPDATE SCREEN TEXT
     screen_text_updater.show_debug_corner()
-    screen_text_updater.update_inputs_text()
-    screen_text_updater.update_states_text()
+    #screen_text_updater.update_inputs_text()
+    #screen_text_updater.update_states_text()
     screen_text_updater.update_data_text()
     car.radars.clear()
     

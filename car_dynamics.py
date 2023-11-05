@@ -12,6 +12,7 @@ import math
 
 import advanced_vehicles
 import reward_function
+from pyro.dynamic import vehicle
 
 BORDER_COLOR = (255, 255, 255, 255) # Color To Crash on Hit
 
@@ -81,34 +82,16 @@ class Car:
         self.radars.append([(x, y), dist])
     
     def update(self, game_map, u):
-        self.game_map = game_map
-        self.u = u
-        
-        self.dx = self.model.f(self.x, self.u)
-        self.x  = self.x + self.dx*self.dt
-        
-        self.angle_correction()
-        
-        self.angle = self.x[3]
-        self.center[0] = self.m2pixel(self.x[4])
-        self.center[1] = self.m2pixel(self.x[5])
-
-        # Calculate Four Corners
-        # Length Is Half The Side
+        pass
+    
+    def calculate_corner_position(self):
         length = 0.5 * self.car_size_x
         left_top = [self.center[0] + math.cos(math.radians(360 - (self.angle + 30))) * length, self.center[1] + math.sin(math.radians(360 - (self.angle + 30))) * length]
         right_top = [self.center[0] + math.cos(math.radians(360 - (self.angle + 150))) * length, self.center[1] + math.sin(math.radians(360 - (self.angle + 150))) * length]
         left_bottom = [self.center[0] + math.cos(math.radians(360 - (self.angle + 210))) * length, self.center[1] + math.sin(math.radians(360 - (self.angle + 210))) * length]
         right_bottom = [self.center[0] + math.cos(math.radians(360 - (self.angle + 330))) * length, self.center[1] + math.sin(math.radians(360 - (self.angle + 330))) * length]
         self.corners = [left_top, right_top, left_bottom, right_bottom]
-
-        # Check Collisions And Clear Radars
-        self.check_collision(self.game_map)
-
-        # CALCULATE TRAVELED DISTANCE
-        self.calculate_total_distance()
-        self.check_turn_completed()
-        
+    
     def angle_correction(self):
         if self.x[2] < -math.pi:
             self.x[2] += (2*math.pi)
@@ -169,9 +152,119 @@ class Car:
             opp_y = 100 * math.cos(-self.angle+math.radians(90))
             pygame.draw.line(surf, (0, 255, 0), (new_rect.center), (new_rect.center[0] + opp_x, new_rect.center[1] + opp_y), 3)
     
+class CarFullDynamicBicycleModel(Car):
+    def __init__(self,car_size_x = 50, car_size_y = 20):
+        # INIT CAR DATA
+        self.car_size_x = car_size_x
+        self.car_size_y = car_size_y
+        self.model = advanced_vehicles.FullDynamicBicycleModelwithVoltInput()
         
+        # INIT STATES FOR GAME
+        self.center = [830 + self.car_size_x / 2, 920 + self.car_size_y / 2]
+        self.angle = 0
+        self.speed = 0
         
-                
+        # INIT STATES AND INPUTS
+        self.x_label = ['v_x','v_y','dtheta','theta','X','Y','omega_f']
+        self.x = [0,0,0,0,self.pixel2m(self.center[0]),self.pixel2m(self.center[1]),5/0.3]
+        self.u_label = ['delta', 'V',]
+        self.u = np.zeros(2)
         
+        # INIT SPRITE
+        self.sprite = pygame.image.load('car.png').convert() # Convert Speeds Up A Lot
+        self.sprite = pygame.transform.scale(self.sprite, (self.car_size_x, self.car_size_y))
+        self.rotated_sprite = self.sprite 
+
+        # INIT SIM PARAM        
+        self.dt = (1/60) #60 Hz
+        self.radars = [] # List For Sensors / Radars
+        self.alive = True # Boolean To Check If Car is Crashed
+        self.turn_traveled_distance = 0
+        self.total_traveled_distance = 0
+        self.turn_completed = 0
         
-    
+    def update(self, game_map, u):
+        self.game_map = game_map
+        self.u = u
+        
+        self.dx = self.model.f(self.x, self.u)
+        self.x  = self.x + self.dx*self.dt
+        
+        self.angle_correction()
+        
+        self.angle = self.x[3]
+        self.center[0] = self.m2pixel(self.x[4])
+        self.center[1] = self.m2pixel(self.x[5])
+        
+        self.calculate_corner_position()
+        
+        print(self.corners)
+        
+        # Check Collisions And Clear Radars
+        self.check_collision(self.game_map)
+
+        # CALCULATE TRAVELED DISTANCE
+        self.calculate_total_distance()
+        self.check_turn_completed()        
+        
+class CarSimpleKinematicBicycleModel(Car):
+    def __init__(self,car_size_x = 50, car_size_y = 20):
+        # INIT CAR DATA
+        self.car_size_x = car_size_x
+        self.car_size_y = car_size_y
+        self.model = advanced_vehicles.KinematicBicyleModel()
+        
+        # INIT STATES FOR GAME
+        self.center = [830 + self.car_size_x / 2, 920 + self.car_size_y / 2]
+        self.angle = 0
+        self.speed = 0
+        
+        # INIT STATES AND INPUTS
+        self.x_label = self.model.state_label
+        self.x = [self.pixel2m(self.center[0]),self.pixel2m(self.center[1]),0,0]
+        self.u_label = self.model.input_label
+        self.u = np.zeros(2)
+        
+        # INIT SPRITE
+        self.sprite = pygame.image.load('car.png').convert() # Convert Speeds Up A Lot
+        self.sprite = pygame.transform.scale(self.sprite, (self.car_size_x, self.car_size_y))
+        self.rotated_sprite = self.sprite 
+
+        # INIT SIM PARAM        
+        self.dt = (1/60) #60 Hz
+        self.radars = [] # List For Sensors / Radars
+        self.alive = True # Boolean To Check If Car is Crashed
+        self.turn_traveled_distance = 0
+        self.total_traveled_distance = 0
+        self.turn_completed = 0
+        
+    def update(self, game_map, u):
+        self.game_map = game_map
+        self.u = u
+        
+        self.dx = self.model.f(self.x, self.u)
+        self.x  = self.x + self.dx*self.dt
+        
+        self.angle_correction()
+        
+        self.angle = self.x[2]
+        self.center[0] = self.m2pixel(self.x[0])
+        self.center[1] = self.m2pixel(self.x[1])
+
+        self.calculate_corner_position()
+
+        # Check Collisions And Clear Radars
+        self.check_collision(self.game_map)
+
+        # CALCULATE TRAVELED DISTANCE
+        self.calculate_total_distance()
+        self.check_turn_completed()  
+                     
+    def angle_correction(self):
+        if self.x[2] < -math.pi:
+            self.x[2] += (2*math.pi)
+        if self.x[2] > math.pi:
+            self.x[2] -= (2*math.pi)
+            
+    def calculate_instant_distance(self):
+        return self.x[3]*self.dt    

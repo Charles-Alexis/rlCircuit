@@ -699,7 +699,76 @@ class FullDynamicBicycleModelwithVoltInput( LateralDynamicBicycleModelwithSpeedI
         
         return q  
         
+class KinematicBicyleModel( system.ContinuousDynamicSystem ):
+    """ 
+    Equations of Motion
+    -------------------------
+    dx   = V cos ( phi )
+    dy   = V sin ( phi )
+    dphi = V/l tan ( beta )
+    """
     
+    ############################
+    def __init__(self):
+        """ """
+    
+        # Dimensions
+        self.n = 4   
+        self.m = 2   
+        self.p = 4
+        
+        # initialize standard params
+        system.ContinuousDynamicSystem.__init__(self, self.n, self.m, self.p)
+        
+        # Labels
+        self.name = 'Kinematic Bicyle Model'
+        self.state_label = ['x','y','theta','v']
+        self.input_label = ['a', 'beta']
+        self.output_label = ['x','y','theta','v']
+        
+        # Units
+        self.state_units = ['[m]','[m]','[rad]','[m/sec]']
+        self.input_units = ['[m/sec^2]', '[rad]']
+        self.output_units = ['[m]','[m]','[rad]','[m/sec]']
+        
+        # State working range
+        self.x_ub = np.array([+5,+2,+3.14])
+        self.x_lb = np.array([-5,-2,-3.14])
+        
+        # Model param
+        self.lenght = 1
+        
+        # Graphic output parameters 
+        self.dynamic_domain  = True
+        self.dynamic_range   = 10
+        
+    #############################
+    def f(self, x = np.zeros(3) , u = np.zeros(2) , t = 0 ):
+        """ 
+        Continuous time foward dynamics evaluation
+        
+        dx = f(x,u,t)
+        
+        INPUTS
+        x  : state vector             n x 1
+        u  : control inputs vector    m x 1
+        t  : time                     1 x 1
+        
+        OUPUTS
+        dx : state derivative vectror n x 1
+        
+        """
+        
+        dx = np.zeros(self.n) # State derivative vector
+
+        dx[0] = x[3] * np.cos( x[2] )
+        dx[1] = x[3] * np.sin( x[2] )
+        dx[2] = x[3] * np.tan( u[1] ) * ( 1. / self.lenght) 
+        dx[3] = u[0]
+        
+        return dx
+    
+ 
 '''
 #################################################################
 ##################          Main                         ########
